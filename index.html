@@ -5,7 +5,13 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lab 9</title>
+  <title>Lab 9 - Alexis Navarrete</title>
+  <script src="https://cdn.trackjs.com/agent/v3/latest/t.js"></script>
+  <script>
+    window.TrackJS && TrackJS.install({
+      token: "f75444b5355644158994e220cf480b01"
+    });
+  </script>
 
   <style>
     button {
@@ -24,10 +30,11 @@
     output {
       border: 1px solid gray;
       display: block;
-      height: 18px;
+      min-height: 18px;
       margin-top: 5px;
       padding: 5px;
-      width: 240px;
+      width: 500px;
+      font-size: 14px;
     }
 
     main {
@@ -51,6 +58,7 @@
 
 <body>
   <main>
+    <h1>Alexis Navarrete</h1>
     <form>
       <fieldset>
         <legend>Error Calculator</legend>
@@ -88,6 +96,46 @@
   </main>
 
   <script>
+    // ── Custom Error Classes (Step 4) ──
+    class ValidationError extends Error {
+      constructor(field, message) {
+        super(message);
+        this.name = 'ValidationError';
+        this.field = field;
+      }
+    }
+
+    class DivisionByZeroError extends Error {
+      constructor() {
+        super('Division by zero is undefined');
+        this.name = 'DivisionByZeroError';
+      }
+    }
+
+    // ── Calculator with try/catch/finally (Step 3) ──
+    function calculate(firstVal, secondVal, operator) {
+      const num1 = parseFloat(firstVal);
+      const num2 = parseFloat(secondVal);
+
+      if (firstVal.trim() === '' || isNaN(num1)) {
+        throw new ValidationError('first-num', `"${firstVal}" is not a valid number`);
+      }
+      if (secondVal.trim() === '' || isNaN(num2)) {
+        throw new ValidationError('second-num', `"${secondVal}" is not a valid number`);
+      }
+      if (operator === '/' && num2 === 0) {
+        throw new DivisionByZeroError();
+      }
+
+      switch (operator) {
+        case '+': return num1 + num2;
+        case '-': return num1 - num2;
+        case '*': return num1 * num2;
+        case '/': return num1 / num2;
+        default: throw new Error(`Unknown operator: ${operator}`);
+      }
+    }
+
     let form = document.querySelector('form');
     form.addEventListener('submit', e => {
       e.preventDefault();
@@ -95,13 +143,154 @@
       let firstNum = document.querySelector('#first-num').value;
       let secondNum = document.querySelector('#second-num').value;
       let operator = document.querySelector('#operator').value;
-      output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
+
+      try {
+        const result = calculate(firstNum, secondNum, operator);
+        output.innerHTML = result;
+        output.style.color = 'black';
+      } catch (error) {
+        if (error instanceof ValidationError) {
+          output.innerHTML = `Validation Error (${error.field}): ${error.message}`;
+          output.style.color = 'red';
+          console.error(`%c${error.name} on field "${error.field}"`, 'color: red', error.message);
+        } else if (error instanceof DivisionByZeroError) {
+          output.innerHTML = `Math Error: ${error.message}`;
+          output.style.color = 'red';
+          console.error(`%c${error.name}`, 'color: orange', error.message);
+        } else {
+          output.innerHTML = `Error: ${error.message}`;
+          output.style.color = 'red';
+          console.error('Unexpected error:', error);
+        }
+      } finally {
+        console.log(`Calculator executed at ${new Date().toLocaleTimeString()} — inputs: "${firstNum}" ${operator} "${secondNum}"`);
+      }
     });
 
+    // ── Global Error Handler (Step 5) ──
+    window.onerror = function (message, source, lineno, colno, error) {
+      console.log(`%cGlobal Error Caught!`, 'color: white; background: red; padding: 2px 6px; border-radius: 3px;');
+      console.log(`  Message: ${message}`);
+      console.log(`  Source: ${source}`);
+      console.log(`  Line: ${lineno}, Column: ${colno}`);
+      if (error) console.log('  Error object:', error);
+      return false;
+    };
+
+    // ── Console Button Handlers (Step 2) ──
     let errorBtns = Array.from(document.querySelectorAll('#error-btns > button'));
 
-    // Start your code here
-    // You may move this JS to another file if you wish
+    const sampleData = [
+      { name: 'Alice', grade: 95, passing: true },
+      { name: 'Bob', grade: 72, passing: true },
+      { name: 'Charlie', grade: 58, passing: false },
+      { name: 'Diana', grade: 88, passing: true },
+    ];
+
+    // Console Log
+    errorBtns[0].addEventListener('click', () => {
+      console.log('Simple log message');
+      console.log('Student data:', sampleData);
+      console.log('%cStyled log message', 'color: blue; font-size: 16px; font-weight: bold;');
+    });
+
+    // Console Error
+    errorBtns[1].addEventListener('click', () => {
+      console.error('This is a console.error() demo — something went wrong!');
+      console.error('Failed to load resource:', { url: '/api/students', status: 404 });
+    });
+
+    // Console Count
+    errorBtns[2].addEventListener('click', () => {
+      console.count('Button clicked');
+    });
+
+    // Console Warn
+    errorBtns[3].addEventListener('click', () => {
+      console.warn('This is a console.warn() demo — proceed with caution');
+      console.warn('Deprecated: use newMethod() instead of oldMethod()');
+    });
+
+    // Console Assert
+    errorBtns[4].addEventListener('click', () => {
+      console.assert(1 === 1, 'This will NOT show because the assertion passes');
+      console.assert(1 === 2, 'This WILL show because 1 !== 2 — assertion failed');
+      console.assert(sampleData.length > 10, 'Expected more than 10 students, got', sampleData.length);
+    });
+
+    // Console Clear
+    errorBtns[5].addEventListener('click', () => {
+      console.clear();
+    });
+
+    // Console Dir
+    errorBtns[6].addEventListener('click', () => {
+      console.log('console.dir shows an interactive object representation:');
+      console.dir(document.querySelector('form'));
+      console.dir(sampleData);
+    });
+
+    // Console Dirxml
+    errorBtns[7].addEventListener('click', () => {
+      console.log('console.dirxml shows the XML/HTML tree of a DOM element:');
+      console.dirxml(document.querySelector('main'));
+      console.dirxml(document.querySelector('#error-btns'));
+    });
+
+    // Console Group Start
+    errorBtns[8].addEventListener('click', () => {
+      console.group('Student Report');
+      console.log('Total students:', sampleData.length);
+      console.group('Passing Students');
+      sampleData.filter(s => s.passing).forEach(s => console.log(`${s.name}: ${s.grade}`));
+      console.groupEnd();
+      console.groupCollapsed('Failing Students (collapsed)');
+      sampleData.filter(s => !s.passing).forEach(s => console.warn(`${s.name}: ${s.grade}`));
+      console.groupEnd();
+      console.log('End of report');
+      console.groupEnd();
+    });
+
+    // Console Group End
+    errorBtns[9].addEventListener('click', () => {
+      console.groupEnd();
+    });
+
+    // Console Table
+    errorBtns[10].addEventListener('click', () => {
+      console.table(sampleData);
+    });
+
+    // Start Timer
+    errorBtns[11].addEventListener('click', () => {
+      console.time('myTimer');
+      console.log('Timer "myTimer" started — click "End Timer" to see elapsed time');
+    });
+
+    // End Timer
+    errorBtns[12].addEventListener('click', () => {
+      console.timeEnd('myTimer');
+    });
+
+    // Console Trace
+    errorBtns[13].addEventListener('click', () => {
+      function innerFunction() {
+        console.trace('Trace from innerFunction — showing the call stack');
+      }
+      function middleFunction() {
+        innerFunction();
+      }
+      function outerFunction() {
+        middleFunction();
+      }
+      outerFunction();
+    });
+
+    // Trigger a Global Error (Step 5)
+    errorBtns[14].addEventListener('click', () => {
+      const nonExistent = undefined;
+      nonExistent.property;
+    });
   </script>
 </body>
 
