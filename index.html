@@ -114,13 +114,13 @@
 
     // ── Calculator with try/catch/finally (Step 3) ──
     function calculate(firstVal, secondVal, operator) {
-      const num1 = parseFloat(firstVal);
-      const num2 = parseFloat(secondVal);
+      const num1 = Number(firstVal);
+      const num2 = Number(secondVal);
 
-      if (firstVal.trim() === '' || isNaN(num1)) {
+      if (firstVal.trim() === '' || isNaN(Number(firstVal))) {
         throw new ValidationError('first-num', `"${firstVal}" is not a valid number`);
       }
-      if (secondVal.trim() === '' || isNaN(num2)) {
+      if (secondVal.trim() === '' || isNaN(Number(secondVal))) {
         throw new ValidationError('second-num', `"${secondVal}" is not a valid number`);
       }
       if (operator === '/' && num2 === 0) {
